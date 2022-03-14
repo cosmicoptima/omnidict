@@ -1,0 +1,14 @@
+[package]
+name = "the-project"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+futures-util = "0.3.21"
+twilight-gateway = "0.10.0"
+twilight-http = "0.10.0"
+twilight-model = "0.10.0"
+
+[dependencies.tokio]
+version = "1"
+features = ["full"]
