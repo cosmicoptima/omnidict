@@ -34,7 +34,6 @@ pub async fn qa_prompt(question: &str) -> Res<String> {
         "In this case, Omnidict's reply is relatively unexpected",
     ]
     .choose(&mut rand::thread_rng()).unwrap();
-    eprintln!("{}", annotation);
     complete_prompt(prompt, vec![("question", question), ("annotation", annotation)]).await
 }
 
@@ -45,7 +44,6 @@ async fn complete_prompt(prompt: Prompt, parameters: Vec<(&str, &str)>) -> Res<S
         let key = format!("[[{}]]", key);
         text = text.replace(&key, value);
     }
-    eprintln!("{}", text);
     get_j1(text.as_str(), prompt.stop_seqs).await
 }
 
