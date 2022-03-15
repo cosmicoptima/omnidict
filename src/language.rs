@@ -11,6 +11,14 @@ pub struct Prompt {
 
 const AI21_TOKEN: &str = include_str!("../sensitive/ai21.token");
 
+const DICTUM_PROMPT_TEXT: &str = include_str!("../assets/dictum.prompt");
+pub fn dictum_prompt() -> Prompt {
+    Prompt {
+        text: DICTUM_PROMPT_TEXT.trim().to_string(),
+        stop_seqs: vec!["\n".to_string()],
+    }
+}
+
 const QA_PROMPT_TEXT: &str = include_str!("../assets/qa.prompt");
 pub fn qa_prompt() -> Prompt {
     Prompt {

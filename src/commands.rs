@@ -1,5 +1,5 @@
 use crate::discord::reply;
-use crate::language::{complete_prompt, qa_prompt};
+use crate::language::{complete_prompt, dictum_prompt, qa_prompt};
 use crate::prelude::*;
 
 use twilight_http::Client as HttpClient;
@@ -23,7 +23,8 @@ pub async fn handle_command(http: &HttpClient, msg: Message) -> Res<bool> {
 
     // requests for dict's latest dictum
     if content == "what is your latest dictum" {
-        // TODO
+        let output = complete_prompt(dictum_prompt(), vec![]).await?;
+        reply(&http, msg.channel_id, msg.id, output.as_str()).await?;
         return Ok(true);
     }
 
