@@ -1,9 +1,10 @@
+mod commands;
 mod discord;
 mod language;
 mod prelude;
 
-use discord::{reply, OWN_ID};
-use language::{complete_prompt, qa_prompt};
+use commands::handle_command;
+use discord::OWN_ID;
 use prelude::*;
 
 use futures_util::StreamExt;
@@ -14,22 +15,7 @@ use twilight_http::Client as HttpClient;
 async fn handle_event_inner(event: Event, http: Arc<HttpClient>) -> Res<()> {
     match event {
         Event::MessageCreate(msg) if msg.author.id != OWN_ID => {
-            if msg.content == "gm" {
-                reply(&http, msg.channel_id, msg.id, "gm motherfucker").await?;
-            /*
-            } else if let Some(prompt) = msg.content.strip_prefix("j1test ") {
-                reply(
-                    &http,
-                    msg.channel_id,
-                    msg.id,
-                    get_j1(prompt, vec!["\n"]).await?.as_str(),
-                )
-                .await?;
-            */
-            } else if let Some(question) = msg.content.strip_prefix("dict, ") {
-                let output = complete_prompt(qa_prompt(), vec![("question", question)]).await?;
-                reply(&http, msg.channel_id, msg.id, output.as_str()).await?;
-            }
+            handle_command(&http, (*msg).0).await?;
         }
         _ => (),
     }

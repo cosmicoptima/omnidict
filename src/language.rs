@@ -38,6 +38,7 @@ async fn get_j1(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
         "prompt": prompt,
         "maxTokens": max_tokens,
         "stopSequences": stop_seqs,
+        "presencePenalty": {"scale": 0.3},
         "temperature": temperature,
         "topP": top_p,
     });
