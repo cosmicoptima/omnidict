@@ -28,7 +28,7 @@ pub async fn qa_prompt(question: &str) -> Res<String> {
         stop_seqs: vec!["\n".to_string()],
     };
     let annotation = [
-        "Omnidict's response is incredibly florid yet alarming and punchy",
+        "Notice that Omnidict's response is incredibly florid",
         "Here, Omnidict's response weaves in one of his peculiar obsessions",
         "Notice that Omnidict opines on foreign affairs here",
         "In this case, Omnidict's reply is relatively unexpected",
