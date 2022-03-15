@@ -33,8 +33,13 @@ pub async fn qa_prompt(question: &str) -> Res<String> {
         "Notice that Omnidict opines on foreign affairs here",
         "In this case, Omnidict's reply is relatively unexpected",
     ]
-    .choose(&mut rand::thread_rng()).unwrap();
-    complete_prompt(prompt, vec![("question", question), ("annotation", annotation)]).await
+    .choose(&mut rand::thread_rng())
+    .unwrap();
+    complete_prompt(
+        prompt,
+        vec![("question", question), ("annotation", annotation)],
+    )
+    .await
 }
 
 async fn complete_prompt(prompt: Prompt, parameters: Vec<(&str, &str)>) -> Res<String> {
