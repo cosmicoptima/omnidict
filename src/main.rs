@@ -22,7 +22,7 @@ async fn handle_event_inner(event: Event, http: Arc<HttpClient>) -> Res<()> {
     Ok(())
 }
 
-async fn handle_event(event: Event, http: Arc<HttpClient>) -> () {
+async fn handle_event(event: Event, http: Arc<HttpClient>) {
     if let Err(e) = handle_event_inner(event, http).await {
         eprintln!("{}", e);
     }
