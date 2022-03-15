@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+use rand::seq::SliceRandom;
 use reqwest::header;
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::json;
@@ -12,28 +13,39 @@ pub struct Prompt {
 const AI21_TOKEN: &str = include_str!("../sensitive/ai21.token");
 
 const DICTUM_PROMPT_TEXT: &str = include_str!("../assets/dictum.prompt");
-pub fn dictum_prompt() -> Prompt {
-    Prompt {
+pub async fn dictum_prompt() -> Res<String> {
+    let prompt = Prompt {
         text: DICTUM_PROMPT_TEXT.trim().to_string(),
         stop_seqs: vec!["\n".to_string()],
-    }
+    };
+    complete_prompt(prompt, vec![]).await
 }
 
 const QA_PROMPT_TEXT: &str = include_str!("../assets/qa.prompt");
-pub fn qa_prompt() -> Prompt {
-    Prompt {
+pub async fn qa_prompt(question: &str) -> Res<String> {
+    let prompt = Prompt {
         text: QA_PROMPT_TEXT.trim().to_string(),
         stop_seqs: vec!["\n".to_string()],
-    }
+    };
+    let annotation = [
+        "Omnidict's response is incredibly florid yet alarming and punchy",
+        "Here, Omnidict's response weaves in one of his peculiar obsessions",
+        "Notice that Omnidict opines on foreign affairs here",
+        "In this case, Omnidict's reply is relatively unexpected",
+    ]
+    .choose(&mut rand::thread_rng()).unwrap();
+    eprintln!("{}", annotation);
+    complete_prompt(prompt, vec![("question", question), ("annotation", annotation)]).await
 }
 
-pub async fn complete_prompt(prompt: Prompt, parameters: Vec<(&str, &str)>) -> Res<String> {
+async fn complete_prompt(prompt: Prompt, parameters: Vec<(&str, &str)>) -> Res<String> {
     let mut text = String::from(prompt.text);
 
     for (key, value) in parameters {
         let key = format!("[[{}]]", key);
         text = text.replace(&key, value);
     }
+    eprintln!("{}", text);
     get_j1(text.as_str(), prompt.stop_seqs).await
 }
 
@@ -46,7 +58,7 @@ async fn get_j1(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
         "prompt": prompt,
         "maxTokens": max_tokens,
         "stopSequences": stop_seqs,
-        "presencePenalty": {"scale": 0.3},
+        "presencePenalty": {"scale": 0.4},
         "temperature": temperature,
         "topP": top_p,
     });
