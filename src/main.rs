@@ -4,26 +4,48 @@ mod language;
 mod prelude;
 
 use commands::handle_command;
-use discord::OWN_ID;
+use discord::{reply, set_own_nickname, OWN_ID};
+use language::qa_prompt;
 use prelude::*;
 
-use futures_util::StreamExt;
 use std::{fs, sync::Arc};
+
+use futures_util::StreamExt;
+use rand::{thread_rng, Rng};
+use tokio::sync::Mutex;
 use twilight_gateway::{Event, Intents, Shard};
 use twilight_http::Client as HttpClient;
 
-async fn handle_event_inner(event: Event, http: Arc<HttpClient>) -> Res<()> {
+async fn handle_event_inner(event: Event, http: Arc<HttpClient>, conn: Conn) -> Res<()> {
+    let context = Context { http, conn };
+
     match event {
         Event::MessageCreate(msg) if msg.author.id != OWN_ID => {
-            handle_command(&http, (*msg).0).await?;
+            let msg = (*msg).0;
+            handle_command(&context, &msg).await?;
+
+            if thread_rng().gen_bool(0.01) {
+                let output = qa_prompt(msg.content.as_str()).await?;
+                reply(&context.http, msg.channel_id, msg.id, output.as_str()).await?;
+            }
         }
         _ => (),
     }
     Ok(())
 }
 
-async fn handle_event(event: Event, http: Arc<HttpClient>) {
-    if let Err(e) = handle_event_inner(event, http).await {
+async fn handle_event(event: Event, http: Arc<HttpClient>, conn: Conn) {
+    if let Err(e) = handle_event_inner(event, http, conn).await {
+        eprintln!("{}", e);
+    }
+}
+
+async fn on_start_inner(http: Arc<HttpClient>) -> Res<()> {
+    set_own_nickname(&http, "omnidict").await
+}
+
+async fn on_start(http: Arc<HttpClient>) {
+    if let Err(e) = on_start_inner(http).await {
         eprintln!("{}", e);
     }
 }
@@ -41,8 +63,13 @@ async fn main() -> Res<()> {
     let (shard, mut events) = Shard::new(token, intents);
     shard.start().await?;
 
+    let redis = redis::Client::open("redis://127.0.0.1")?;
+    let conn = Arc::new(Mutex::new(redis.get_connection()?));
+
+    tokio::spawn(on_start(http.clone()));
+
     while let Some(event) = events.next().await {
-        tokio::spawn(handle_event(event, http.clone()));
+        tokio::spawn(handle_event(event, http.clone(), conn.clone()));
     }
 
     Ok(())

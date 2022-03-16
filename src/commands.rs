@@ -1,12 +1,13 @@
-use crate::discord::reply;
-use crate::language::{dictum_prompt, qa_prompt};
+use crate::discord::{embed, reply, reply_embed};
+use crate::language::{dictum_prompt, gender_prompt, qa_prompt};
 use crate::prelude::*;
 
-use twilight_http::Client as HttpClient;
+use redis::Commands;
 use twilight_model::channel::message::Message;
 
-pub async fn handle_command(http: &HttpClient, msg: Message) -> Res<bool> {
-    let content = msg.content;
+pub async fn handle_command(context: &Context, msg: &Message) -> Res<bool> {
+    let content = &msg.content;
+    let http = &context.http;
 
     // gm
     if content == "gm" {
@@ -25,6 +26,47 @@ pub async fn handle_command(http: &HttpClient, msg: Message) -> Res<bool> {
     if content == "what is your latest dictum" {
         let output = dictum_prompt().await?;
         reply(&http, msg.channel_id, msg.id, output.as_str()).await?;
+        return Ok(true);
+    }
+
+    // requests for one's current gender
+    if content == "what is my current gender" {
+        let mut conn = context.conn.lock().await;
+        let gender: String = conn.get(format!("users:{}:gender", msg.author.id))?;
+
+        reply_embed(
+            &http,
+            msg.channel_id,
+            msg.id,
+            &embed(
+                "Gender",
+                format!("Your current gender is **{}**.", gender).as_str(),
+            ),
+        )
+        .await?;
+
+        return Ok(true);
+    }
+
+    // requests for a new gender
+    if content == "what is my latest gender" {
+        let output = gender_prompt().await?;
+        let output = output.as_str();
+
+        let mut conn = context.conn.lock().await;
+        let _: () = conn.set(format!("users:{}:gender", msg.author.id), output)?;
+
+        reply_embed(
+            &http,
+            msg.channel_id,
+            msg.id,
+            &embed(
+                "Gender",
+                format!("Your new gender is **{}**.", output).as_str(),
+            ),
+        )
+        .await?;
+
         return Ok(true);
     }
 

@@ -18,7 +18,16 @@ pub async fn dictum_prompt() -> Res<String> {
         text: DICTUM_PROMPT_TEXT.trim().to_string(),
         stop_seqs: vec!["\n".to_string()],
     };
-    complete_prompt(prompt, vec![]).await
+    Ok(complete_prompt(prompt, vec![]).await?.trim().to_string())
+}
+
+const GENDER_PROMPT_TEXT: &str = include_str!("../assets/gender.prompt");
+pub async fn gender_prompt() -> Res<String> {
+    let prompt = Prompt {
+        text: GENDER_PROMPT_TEXT.trim().to_string(),
+        stop_seqs: vec!["\n".to_string()],
+    };
+    Ok(complete_prompt(prompt, vec![]).await?.trim().to_string())
 }
 
 const QA_PROMPT_TEXT: &str = include_str!("../assets/qa.prompt");
@@ -28,18 +37,21 @@ pub async fn qa_prompt(question: &str) -> Res<String> {
         stop_seqs: vec!["\n".to_string()],
     };
     let annotation = [
-        "Notice that Omnidict's response is incredibly florid",
+        "Omnidict's reply is incredibly florid",
         "Here, Omnidict's response weaves in one of his peculiar obsessions",
         "Notice that Omnidict opines on foreign affairs here",
         "In this case, Omnidict's reply is relatively unexpected",
     ]
     .choose(&mut rand::thread_rng())
     .unwrap();
-    complete_prompt(
+
+    Ok(complete_prompt(
         prompt,
         vec![("question", question), ("annotation", annotation)],
     )
-    .await
+    .await?
+    .trim()
+    .to_string())
 }
 
 async fn complete_prompt(prompt: Prompt, parameters: Vec<(&str, &str)>) -> Res<String> {
