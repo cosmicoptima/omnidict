@@ -23,7 +23,7 @@ async fn handle_event_inner(event: Event, context: Context) -> Res<()> {
             let msg = (*msg).0;
             handle_command(&context, &msg).await?;
 
-            if thread_rng().gen_bool(0.01) {
+            if thread_rng().gen_bool(0.02) {
                 let output = qa_prompt(msg.content.as_str()).await?;
                 reply(&context.http, msg.channel_id, msg.id, output.as_str()).await?;
             }
