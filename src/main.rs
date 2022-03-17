@@ -1,10 +1,11 @@
 mod commands;
+mod data;
 mod discord;
 mod language;
 mod prelude;
 
 use commands::handle_command;
-use discord::{reply, set_own_nickname, OWN_ID};
+use discord::{reply, send, set_own_nickname, GENERAL_ID, OWN_ID};
 use language::qa_prompt;
 use prelude::*;
 
@@ -39,7 +40,9 @@ async fn handle_event(event: Event, context: Context) {
 }
 
 async fn on_start_inner(http: Arc<HttpClient>) -> Res<()> {
-    set_own_nickname(&http, "omnidict").await
+    send(&http, GENERAL_ID, "Rise and shine, bitches").await?;
+    set_own_nickname(&http, "omnidict").await?;
+    Ok(())
 }
 
 async fn on_start(http: Arc<HttpClient>) {

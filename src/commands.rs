@@ -1,4 +1,5 @@
-use crate::discord::{embed, reply, reply_embed, send};
+use crate::data::get_user;
+use crate::discord::{embed, embed_fields, reply, reply_embed, send};
 use crate::language::{dictum_prompt, gender_prompt, qa_prompt};
 use crate::prelude::*;
 
@@ -37,17 +38,17 @@ pub async fn handle_command(context: &Context, msg: &Message) -> Res<bool> {
 
     // requests for one's current gender
     if content == "what is my current gender" {
-        let mut conn = context.conn.lock().await;
-        let gender: String = conn.get(format!("users:{}:gender", msg.author.id))?;
+        let user_data = get_user(msg.author.id, context.conn.clone()).await?;
+        let description = match user_data.gender {
+            None => "You have no gender.".to_string(),
+            Some(gender) => format!("Your current gender is **{}**.", gender),
+        };
 
         reply_embed(
             &http,
             msg.channel_id,
             msg.id,
-            &embed(
-                "Gender",
-                format!("Your current gender is **{}**.", gender).as_str(),
-            ),
+            &embed("Gender", description.as_str()),
         )
         .await?;
 
@@ -70,6 +71,31 @@ pub async fn handle_command(context: &Context, msg: &Message) -> Res<bool> {
                 "Gender",
                 format!("Your new gender is **{}**.", output).as_str(),
             ),
+        )
+        .await?;
+
+        return Ok(true);
+    }
+
+    if content == "profile" {
+        let user_data = get_user(msg.author.id, context.conn.clone()).await?;
+
+        let mut fields = vec![];
+
+        let health = format!("{}", user_data.health);
+        fields.push(("Health", health.as_str()));
+
+        let gender: String;
+        if let Some(gender_) = user_data.gender {
+            gender = gender_;
+            fields.push(("Gender", gender.as_str()));
+        }
+
+        reply_embed(
+            &http,
+            msg.channel_id,
+            msg.id,
+            &embed_fields(Some("Your profile"), None, fields),
         )
         .await?;
 
