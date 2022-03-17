@@ -5,7 +5,7 @@ mod language;
 mod prelude;
 
 use commands::handle_command;
-use discord::{reply, send, set_own_nickname, GENERAL_ID, OWN_ID};
+use discord::{reply, send, send_raw, set_own_nickname, GENERAL_ID, OWN_ID};
 use language::qa_prompt;
 use prelude::*;
 
@@ -34,8 +34,10 @@ async fn handle_event_inner(event: Event, context: Context) -> Res<()> {
 }
 
 async fn handle_event(event: Event, context: Context) {
+    let http = context.http.clone();
     if let Err(e) = handle_event_inner(event, context).await {
-        eprintln!("{}", e);
+        let message = format!("```\n{:?}\n```", e);
+        send_raw(&http, GENERAL_ID, message.as_str()).await.unwrap();
     }
 }
 
@@ -46,8 +48,9 @@ async fn on_start_inner(http: Arc<HttpClient>) -> Res<()> {
 }
 
 async fn on_start(http: Arc<HttpClient>) {
-    if let Err(e) = on_start_inner(http).await {
-        eprintln!("{}", e);
+    if let Err(e) = on_start_inner(http.clone()).await {
+        let message = format!("```\n{:?}\n```", e);
+        send_raw(&http, GENERAL_ID, message.as_str()).await.unwrap();
     }
 }
 
