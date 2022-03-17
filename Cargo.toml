@@ -22,5 +22,4 @@ features = ["full"]
 
 [features]
 fairseq = []
-
-default = ["fairseq"]
+default = []
