@@ -1,10 +1,9 @@
-use crate::data::get_user;
+use crate::data::{get_user, modify_user, UserData};
 use crate::discord::{embed, embed_fields, reply, reply_embed, send};
 use crate::language::{dictum_prompt, gender_prompt, qa_prompt};
 use crate::prelude::*;
 
 use rand::{thread_rng, Rng};
-use redis::Commands;
 use twilight_model::channel::message::Message;
 
 pub async fn handle_command(context: &Context, msg: &Message) -> Res<bool> {
@@ -67,8 +66,15 @@ pub async fn handle_command(context: &Context, msg: &Message) -> Res<bool> {
         let output = gender_prompt().await?;
         let output = output.as_str();
 
-        let mut conn = context.conn.lock().await;
-        let _: () = conn.set(format!("users:{}:gender", msg.author.id), output)?;
+        modify_user(
+            msg.author.id,
+            |u| UserData {
+                gender: Some(output.to_string()),
+                ..u
+            },
+            context.conn.clone(),
+        )
+        .await?;
 
         reply_embed(
             &http,

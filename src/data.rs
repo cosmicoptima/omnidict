@@ -17,7 +17,6 @@ pub async fn get_user(user_id: Id<UserMarker>, conn: Conn) -> Res<UserData> {
     Ok(UserData { health, gender })
 }
 
-/*
 pub async fn set_user(user_id: Id<UserMarker>, user_data: UserData, conn: Conn) -> Res<()> {
     let mut conn = conn.lock().await;
 
@@ -26,4 +25,13 @@ pub async fn set_user(user_id: Id<UserMarker>, user_data: UserData, conn: Conn) 
 
     Ok(())
 }
-*/
+
+pub async fn modify_user<F>(user_id: Id<UserMarker>, modify: F, conn: Conn) -> Res<()>
+where
+    F: Fn(UserData) -> UserData,
+{
+    let user_data = get_user(user_id, conn.clone()).await?;
+    set_user(user_id, modify(user_data), conn).await?;
+
+    Ok(())
+}
