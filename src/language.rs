@@ -39,7 +39,7 @@ pub async fn qa_prompt(question: &str) -> Res<String> {
     let annotation = [
         "Omnidict's reply is incredibly florid",
         "Here, Omnidict's response weaves in one of his peculiar obsessions",
-        "Notice that Omnidict opines on foreign affairs here",
+        "Here, Omnidict opines on a country whose leader he recently spoke to",
         "In this case, Omnidict's reply is relatively unexpected",
     ]
     .choose(&mut rand::thread_rng())
