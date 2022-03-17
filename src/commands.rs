@@ -3,6 +3,7 @@ use crate::discord::{embed, embed_fields, reply, reply_embed, send};
 use crate::language::{dictum_prompt, gender_prompt, qa_prompt};
 use crate::prelude::*;
 
+use rand::{thread_rng, Rng};
 use redis::Commands;
 use twilight_model::channel::message::Message;
 
@@ -18,7 +19,13 @@ pub async fn handle_command(context: &Context, msg: &Message) -> Res<bool> {
 
     // gm
     if content == "gm" {
-        reply(http, msg.channel_id, msg.id, "gm motherfucker").await?;
+        let gm = if thread_rng().gen_bool(0.9) {
+            "gm"
+        } else {
+            "fuck off"
+        };
+
+        reply(http, msg.channel_id, msg.id, gm).await?;
         return Ok(true);
     }
 
