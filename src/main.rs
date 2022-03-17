@@ -59,7 +59,7 @@ async fn on_start(http: Arc<HttpClient>) {
 async fn random_event_loop_inner(http: Arc<HttpClient>) -> Res<!> {
     // random dictation
     loop {
-        if thread_rng().gen_bool(0.00005) {
+        if thread_rng().gen_bool(0.00002) {
             let output = dictum_prompt().await?;
             send(&http, GENERAL_ID, output.as_str()).await?;
         }
