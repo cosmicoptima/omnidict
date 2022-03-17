@@ -128,7 +128,7 @@ async fn get_fairseq(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
 
     let client = reqwest::Client::new();
     let res = client
-        .post("https://api.textsynth.com/v1/generate")
+        .post("https://api.textsynth.com/v1/engines/fairseq_gpt_13B/completions")
         .headers(headers)
         .json(body)
         .send()
