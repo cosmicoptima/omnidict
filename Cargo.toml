@@ -19,3 +19,8 @@ features = ["json"]
 [dependencies.tokio]
 version = "1"
 features = ["full"]
+
+[features]
+fairseq = []
+
+default = ["fairseq"]

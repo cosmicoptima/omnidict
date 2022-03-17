@@ -11,6 +11,7 @@ pub struct Prompt {
 }
 
 const AI21_TOKEN: &str = include_str!("../sensitive/ai21.token");
+const TEXTSYNTH_TOKEN: &str = include_str!("../sensitive/textsynth.token");
 
 const DICTUM_PROMPT_TEXT: &str = include_str!("../assets/dictum.prompt");
 pub async fn dictum_prompt() -> Res<String> {
@@ -61,7 +62,12 @@ async fn complete_prompt(prompt: Prompt, parameters: Vec<(&str, &str)>) -> Res<S
         let key = format!("[[{}]]", key);
         text = text.replace(&key, value);
     }
-    get_j1(text.as_str(), prompt.stop_seqs).await
+
+    if cfg!(feature = "fairseq") {
+        get_fairseq(text.as_str(), prompt.stop_seqs).await
+    } else {
+        get_j1(text.as_str(), prompt.stop_seqs).await
+    }
 }
 
 async fn get_j1(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
@@ -97,5 +103,40 @@ async fn get_j1(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
     Ok(res_json["completions"][0]["data"]["text"]
         .as_str()
         .ok_or(format!("Bad AI21 response: {}", res_json))?
+        .to_string())
+}
+
+async fn get_fairseq(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
+    let max_tokens: u64 = 64;
+    let temperature: f64 = 1.;
+    let top_p: f64 = 0.9;
+
+    let body = &json!({
+        "prompt": prompt,
+        "max_tokens": max_tokens,
+        "stop": stop_seqs,
+        "temperature": temperature,
+        "top_p": top_p,
+    });
+
+    let token = format!("Bearer {}", TEXTSYNTH_TOKEN.trim());
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        header::AUTHORIZATION,
+        HeaderValue::from_str(token.as_str())?,
+    );
+
+    let client = reqwest::Client::new();
+    let res = client
+        .post("https://api.textsynth.com/v1/generate")
+        .headers(headers)
+        .json(body)
+        .send()
+        .await?;
+
+    let res_json = res.json::<serde_json::Value>().await?;
+    Ok(res_json["text"]
+        .as_str()
+        .ok_or(format!("Bad TextSynth response: {}", res_json))?
         .to_string())
 }
