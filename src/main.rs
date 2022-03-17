@@ -66,7 +66,11 @@ async fn main() -> Res<()> {
 
     tokio::spawn(on_start(http.clone()));
 
-    let context = Context { http, conn, shard: Arc::new(shard) };
+    let context = Context {
+        http,
+        conn,
+        shard: Arc::new(shard),
+    };
 
     while let Some(event) = events.next().await {
         tokio::spawn(handle_event(event, context.clone()));

@@ -1,4 +1,4 @@
-use crate::discord::{embed, reply, send, reply_embed};
+use crate::discord::{embed, reply, reply_embed, send};
 use crate::language::{dictum_prompt, gender_prompt, qa_prompt};
 use crate::prelude::*;
 
