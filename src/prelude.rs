@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use redis::Connection;
 use tokio::sync::Mutex;
+use twilight_gateway::shard::Shard;
 use twilight_http::Client as HttpClient;
 
 pub type E = Box<dyn Error + Send + Sync>;
@@ -10,7 +11,9 @@ pub type Res<T> = Result<T, E>;
 
 pub type Conn = Arc<Mutex<Connection>>;
 
+#[derive(Clone)]
 pub struct Context {
     pub http: Arc<HttpClient>,
     pub conn: Conn,
+    pub shard: Arc<Shard>,
 }

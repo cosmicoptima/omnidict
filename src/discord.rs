@@ -27,6 +27,18 @@ pub fn embed(title: &str, description: &str) -> Embed {
     }
 }
 
+pub async fn send_raw(
+    http: &HttpClient,
+    channel_id: Id<ChannelMarker>,
+    content: &str,
+) -> Res<()> {
+    http.create_message(channel_id)
+        .content(content)?
+        .exec()
+        .await?;
+    Ok(())
+}
+
 pub async fn reply_raw(
     http: &HttpClient,
     channel_id: Id<ChannelMarker>,
@@ -72,6 +84,14 @@ pub async fn reply(
     content: &str,
 ) -> Res<()> {
     reply_raw(http, channel_id, in_reply_to, &voice_filter(content)).await
+}
+
+pub async fn send(
+    http: &HttpClient,
+    channel_id: Id<ChannelMarker>,
+    content: &str,
+) -> Res<()> {
+    send_raw(http, channel_id, &voice_filter(content)).await
 }
 
 pub async fn set_own_nickname(http: &HttpClient, name: &str) -> Res<()> {

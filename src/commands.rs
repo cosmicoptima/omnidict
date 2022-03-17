@@ -1,4 +1,4 @@
-use crate::discord::{embed, reply, reply_embed};
+use crate::discord::{embed, reply, send, reply_embed};
 use crate::language::{dictum_prompt, gender_prompt, qa_prompt};
 use crate::prelude::*;
 
@@ -8,6 +8,12 @@ use twilight_model::channel::message::Message;
 pub async fn handle_command(context: &Context, msg: &Message) -> Res<bool> {
     let content = &msg.content;
     let http = &context.http;
+
+    // bedtime!
+    if content == "bedtime!" {
+        send(http, msg.channel_id, "i'm so tired...").await?;
+        context.shard.shutdown();
+    }
 
     // gm
     if content == "gm" {

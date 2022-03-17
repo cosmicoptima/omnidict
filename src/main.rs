@@ -16,9 +16,7 @@ use tokio::sync::Mutex;
 use twilight_gateway::{Event, Intents, Shard};
 use twilight_http::Client as HttpClient;
 
-async fn handle_event_inner(event: Event, http: Arc<HttpClient>, conn: Conn) -> Res<()> {
-    let context = Context { http, conn };
-
+async fn handle_event_inner(event: Event, context: Context) -> Res<()> {
     match event {
         Event::MessageCreate(msg) if msg.author.id != OWN_ID => {
             let msg = (*msg).0;
@@ -34,8 +32,8 @@ async fn handle_event_inner(event: Event, http: Arc<HttpClient>, conn: Conn) -> 
     Ok(())
 }
 
-async fn handle_event(event: Event, http: Arc<HttpClient>, conn: Conn) {
-    if let Err(e) = handle_event_inner(event, http, conn).await {
+async fn handle_event(event: Event, context: Context) {
+    if let Err(e) = handle_event_inner(event, context).await {
         eprintln!("{}", e);
     }
 }
@@ -68,8 +66,10 @@ async fn main() -> Res<()> {
 
     tokio::spawn(on_start(http.clone()));
 
+    let context = Context { http, conn, shard: Arc::new(shard) };
+
     while let Some(event) = events.next().await {
-        tokio::spawn(handle_event(event, http.clone(), conn.clone()));
+        tokio::spawn(handle_event(event, context.clone()));
     }
 
     Ok(())
