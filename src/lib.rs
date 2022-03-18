@@ -2,7 +2,7 @@
 #![feature(try_blocks)]
 
 pub mod prelude;
-pub mod thing_delegator;
+pub mod pfc;
 
 pub mod data {
     mod user;

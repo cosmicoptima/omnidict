@@ -23,11 +23,11 @@ async fn main() -> anyhow::Result<()> {
     let db = Arc::new(Mutex::new(redis.get_connection()?));
 
     util::discord::post_error(
-        thing_delegator::handle_start(http.clone()).await,
+        pfc::handle_start(http.clone()).await,
         &http.clone(),
     )
     .await;
-    tokio::spawn(thing_delegator::catastrophe(http.clone()));
+    tokio::spawn(pfc::catastrophe(http.clone()));
 
     let ctx = prelude::Context {
         http,
@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
         shard: Arc::new(shard),
     };
     while let Some(event) = events.next().await {
-        tokio::spawn(thing_delegator::handle_gateway_event(event, ctx.clone()));
+        tokio::spawn(pfc::handle_gateway_event(event, ctx.clone()));
     }
 
     Ok(())

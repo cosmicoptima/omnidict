@@ -1,3 +1,6 @@
+//! all of dict's whims and thinking start in this file
+//! and spread outward like a toxic spore
+
 use crate::prelude::*;
 use discord::embed_field;
 use rand::{thread_rng, Rng};
@@ -12,7 +15,7 @@ pub async fn handle_start(http: Arc<HttpClient>) -> Result<()> {
     Ok(())
 }
 
-// do something occasionally
+/// do something occasionally
 pub async fn catastrophe(http: Arc<HttpClient>) {
     loop {
         discord::post_error(
