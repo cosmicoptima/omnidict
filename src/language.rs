@@ -1,8 +1,6 @@
-use crate::prelude::*;
-
+use anyhow::Result;
 use rand::seq::SliceRandom;
-use reqwest::header;
-use reqwest::header::{HeaderMap, HeaderValue};
+use reqwest::header::{self, HeaderMap, HeaderValue};
 use serde_json::json;
 
 pub struct Prompt {
@@ -14,7 +12,7 @@ const AI21_TOKEN: &str = include_str!("../sensitive/ai21.token");
 const TEXTSYNTH_TOKEN: &str = include_str!("../sensitive/textsynth.token");
 
 const DICTUM_PROMPT_TEXT: &str = include_str!("../assets/dictum.prompt");
-pub async fn dictum_prompt() -> Res<String> {
+pub async fn dictum_prompt() -> Result<String> {
     let prompt = Prompt {
         text: DICTUM_PROMPT_TEXT.trim().to_string(),
         stop_seqs: vec!["\n".to_string()],
@@ -23,7 +21,7 @@ pub async fn dictum_prompt() -> Res<String> {
 }
 
 const GENDER_PROMPT_TEXT: &str = include_str!("../assets/gender.prompt");
-pub async fn gender_prompt() -> Res<String> {
+pub async fn gender_prompt() -> Result<String> {
     let prompt = Prompt {
         text: GENDER_PROMPT_TEXT.trim().to_string(),
         stop_seqs: vec!["\n".to_string()],
@@ -32,7 +30,7 @@ pub async fn gender_prompt() -> Res<String> {
 }
 
 const QA_PROMPT_TEXT: &str = include_str!("../assets/qa.prompt");
-pub async fn qa_prompt(question: &str) -> Res<String> {
+pub async fn qa_prompt(question: &str) -> Result<String> {
     let prompt = Prompt {
         text: QA_PROMPT_TEXT.trim().to_string(),
         stop_seqs: vec!["\n".to_string()],
@@ -55,8 +53,8 @@ pub async fn qa_prompt(question: &str) -> Res<String> {
     .to_string())
 }
 
-async fn complete_prompt(prompt: Prompt, parameters: Vec<(&str, &str)>) -> Res<String> {
-    let mut text = String::from(prompt.text);
+async fn complete_prompt(prompt: Prompt, parameters: Vec<(&str, &str)>) -> Result<String> {
+    let mut text = prompt.text;
 
     for (key, value) in parameters {
         let key = format!("[[{}]]", key);
@@ -64,49 +62,46 @@ async fn complete_prompt(prompt: Prompt, parameters: Vec<(&str, &str)>) -> Res<S
     }
 
     if cfg!(feature = "fairseq") {
-        get_fairseq(text.as_str(), prompt.stop_seqs).await
+        get_fairseq(&text, prompt.stop_seqs).await
     } else {
-        get_j1(text.as_str(), prompt.stop_seqs).await
+        get_j1(&text, prompt.stop_seqs).await
     }
 }
 
-async fn get_j1(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
+async fn get_j1(prompt: &str, stop_seqs: Vec<String>) -> Result<String> {
     let max_tokens: u64 = 256;
     let temperature: f64 = 1.;
     let top_p: f64 = 0.9;
 
-    let body = &json!({
+    let body = json!({
         "prompt": prompt,
         "maxTokens": max_tokens,
         "stopSequences": stop_seqs,
-        "presencePenalty": {"scale": 0.4},
+        "presencePenalty": { "scale": 0.4_f32 },
         "temperature": temperature,
         "topP": top_p,
     });
 
     let token = format!("Bearer {}", AI21_TOKEN.trim());
     let mut headers = HeaderMap::new();
-    headers.insert(
-        header::AUTHORIZATION,
-        HeaderValue::from_str(token.as_str())?,
-    );
+    headers.insert(header::AUTHORIZATION, HeaderValue::from_str(&token)?);
 
     let client = reqwest::Client::new();
     let res = client
         .post("https://api.ai21.com/studio/v1/j1-jumbo/complete")
         .headers(headers)
-        .json(body)
+        .json(&body)
         .send()
         .await?;
 
     let res_json = res.json::<serde_json::Value>().await?;
     Ok(res_json["completions"][0]["data"]["text"]
         .as_str()
-        .ok_or(format!("Bad AI21 response: {}", res_json))?
+        .ok_or_else(|| anyhow::anyhow!("Bad AI21 response: {}", res_json))?
         .to_string())
 }
 
-async fn get_fairseq(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
+async fn get_fairseq(prompt: &str, stop_seqs: Vec<String>) -> Result<String> {
     let max_tokens: u64 = 64;
     let temperature: f64 = 1.;
     let top_p: f64 = 0.9;
@@ -121,10 +116,7 @@ async fn get_fairseq(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
 
     let token = format!("Bearer {}", TEXTSYNTH_TOKEN.trim());
     let mut headers = HeaderMap::new();
-    headers.insert(
-        header::AUTHORIZATION,
-        HeaderValue::from_str(token.as_str())?,
-    );
+    headers.insert(header::AUTHORIZATION, HeaderValue::from_str(&token)?);
 
     let client = reqwest::Client::new();
     let res = client
@@ -137,6 +129,6 @@ async fn get_fairseq(prompt: &str, stop_seqs: Vec<String>) -> Res<String> {
     let res_json = res.json::<serde_json::Value>().await?;
     Ok(res_json["text"]
         .as_str()
-        .ok_or(format!("Bad TextSynth response: {}", res_json))?
+        .ok_or_else(|| anyhow::anyhow!("Bad TextSynth response: {}", res_json))?
         .to_string())
 }

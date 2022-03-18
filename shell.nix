@@ -1,5 +1,5 @@
 with import <nixpkgs> {};
 stdenv.mkDerivation {
-  name = "the-project";
+  name = "omnidict";
   buildInputs = with pkgs; [bintools-unwrapped openssl pkg-config];
 }
