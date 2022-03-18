@@ -24,6 +24,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.56"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4361135be9122e0870de935d7c439aef945b9f9ddd4199a553b5270b49c82a27"
+
+[[package]]
 name = "async-trait"
 version = "0.1.52"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -651,6 +657,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "omnidict"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "futures-util",
+ "rand 0.7.3",
+ "redis",
+ "reqwest",
+ "serde_json",
+ "tokio",
+ "twilight-embed-builder",
+ "twilight-gateway",
+ "twilight-http",
+ "twilight-model",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1173,21 +1196,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "the-project"
-version = "0.1.0"
-dependencies = [
- "futures-util",
- "rand 0.7.3",
- "redis",
- "reqwest",
- "serde_json",
- "tokio",
- "twilight-gateway",
- "twilight-http",
- "twilight-model",
-]
-
-[[package]]
 name = "thiserror"
 version = "1.0.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1377,6 +1385,15 @@ dependencies = [
  "url",
  "utf-8",
  "webpki",
+]
+
+[[package]]
+name = "twilight-embed-builder"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a292d0a203b67060b1ec5e8183438f2bf97c9804a4a8eb153e7f8d23ae548760"
+dependencies = [
+ "twilight-model",
 ]
 
 [[package]]
