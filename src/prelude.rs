@@ -1,6 +1,6 @@
 pub use crate::data::*;
-pub use crate::discord::{self, GENERAL_ID, OWN_ID, PNPPC_ID};
-pub use crate::language::*;
+pub use crate::util::discord::{self, GENERAL_ID, OWN_ID, PNPPC_ID};
+pub use crate::util::language::*;
 
 pub use anyhow::{anyhow, Error, Result};
 pub use redis::Commands;

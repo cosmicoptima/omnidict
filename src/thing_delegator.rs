@@ -140,7 +140,7 @@ pub async fn handle_command(ctx: &Context, msg: &Message) -> Result<bool> {
         }
 
         discord::reply_embed(http, msg.channel_id, msg.id, &embed).await?;
-        return Ok(true)
+        return Ok(true);
     }
 
     Ok(false)

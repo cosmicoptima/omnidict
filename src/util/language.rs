@@ -8,10 +8,10 @@ pub struct Prompt {
     stop_seqs: Vec<String>,
 }
 
-const AI21_TOKEN: &str = include_str!("../sensitive/ai21.token");
-const TEXTSYNTH_TOKEN: &str = include_str!("../sensitive/textsynth.token");
+const AI21_TOKEN: &str = include_str!("../../sensitive/ai21.token");
+const TEXTSYNTH_TOKEN: &str = include_str!("../../sensitive/textsynth.token");
 
-const DICTUM_PROMPT_TEXT: &str = include_str!("../assets/dictum.prompt");
+const DICTUM_PROMPT_TEXT: &str = include_str!("../../assets/dictum.prompt");
 pub async fn dictum_prompt() -> Result<String> {
     let prompt = Prompt {
         text: DICTUM_PROMPT_TEXT.trim().to_string(),
@@ -20,7 +20,7 @@ pub async fn dictum_prompt() -> Result<String> {
     Ok(complete_prompt(prompt, vec![]).await?.trim().to_string())
 }
 
-const GENDER_PROMPT_TEXT: &str = include_str!("../assets/gender.prompt");
+const GENDER_PROMPT_TEXT: &str = include_str!("../../assets/gender.prompt");
 pub async fn gender_prompt() -> Result<String> {
     let prompt = Prompt {
         text: GENDER_PROMPT_TEXT.trim().to_string(),
@@ -29,7 +29,7 @@ pub async fn gender_prompt() -> Result<String> {
     Ok(complete_prompt(prompt, vec![]).await?.trim().to_string())
 }
 
-const QA_PROMPT_TEXT: &str = include_str!("../assets/qa.prompt");
+const QA_PROMPT_TEXT: &str = include_str!("../../assets/qa.prompt");
 pub async fn qa_prompt(question: &str) -> Result<String> {
     let prompt = Prompt {
         text: QA_PROMPT_TEXT.trim().to_string(),

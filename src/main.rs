@@ -1,13 +1,5 @@
-#![feature(never_type)]
-#![feature(try_blocks)]
-
-pub mod brain;
-pub mod data;
-pub mod discord;
-pub mod language;
-pub mod prelude;
-
 use futures_util::StreamExt;
+use omnidict::*;
 use std::fs;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -30,8 +22,12 @@ async fn main() -> anyhow::Result<()> {
     let redis = redis::Client::open("redis://127.0.0.1")?;
     let db = Arc::new(Mutex::new(redis.get_connection()?));
 
-    discord::post_error(brain::handle_start(http.clone()).await, &http.clone()).await;
-    tokio::spawn(brain::catastrophe(http.clone()));
+    util::discord::post_error(
+        thing_delegator::handle_start(http.clone()).await,
+        &http.clone(),
+    )
+    .await;
+    tokio::spawn(thing_delegator::catastrophe(http.clone()));
 
     let ctx = prelude::Context {
         http,
@@ -39,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
         shard: Arc::new(shard),
     };
     while let Some(event) = events.next().await {
-        tokio::spawn(brain::handle_gateway_event(event, ctx.clone()));
+        tokio::spawn(thing_delegator::handle_gateway_event(event, ctx.clone()));
     }
 
     Ok(())
