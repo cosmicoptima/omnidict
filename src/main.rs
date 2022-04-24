@@ -24,7 +24,7 @@ async fn main() -> anyhow::Result<()> {
     let redis = redis::Client::open("redis://127.0.0.1")?;
     let db = Arc::new(Mutex::new(redis.get_connection()?));
 
-    let mut reader = BufReader::new(File::open("data/crawl-300d-2M.vec")?);
+    let mut reader = BufReader::new(File::open("data/cc.en.300.bin")?);
     let embeddings = Embeddings::read_fasttext(&mut reader)?;
 
     util::discord::post_error(pfc::handle_start(http.clone()).await, &http.clone()).await;
