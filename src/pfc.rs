@@ -147,8 +147,6 @@ pub async fn handle_command(ctx: &Context, msg: &Message) -> Result<bool> {
         return Ok(true);
     }
 
-    
-
     // testing word embeddings
     if let Some(word) = content.strip_prefix("DEBUG similarity ") {
         if let Some(results) = ctx.embeddings.word_similarity(word, 10) {

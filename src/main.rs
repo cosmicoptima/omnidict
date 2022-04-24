@@ -4,7 +4,6 @@ use omnidict::*;
 use std::io::BufReader;
 use std::sync::Arc;
 use std::{fs, fs::File};
-use tokio::sync::Mutex;
 use twilight_gateway::{Intents, Shard};
 use twilight_http::Client as HttpClient;
 
@@ -21,8 +20,7 @@ async fn main() -> anyhow::Result<()> {
     let (shard, mut events) = Shard::new(token, intents);
     shard.start().await?;
 
-    let redis = redis::Client::open("redis://127.0.0.1")?;
-    let db = Arc::new(Mutex::new(redis.get_connection()?));
+    let db = Arc::new(sled::open("/home/celeste/.omnidict")?);
 
     let mut reader = BufReader::new(File::open("data/cc.en.300.bin")?);
     let embeddings = Embeddings::read_fasttext(&mut reader)?;

@@ -3,8 +3,7 @@ pub use crate::util::discord::{self, GENERAL_ID, OWN_ID, PNPPC_ID};
 pub use crate::util::language::*;
 
 pub use anyhow::{anyhow, Error, Result};
-pub use redis::Commands;
-pub use redis::Connection as DbConnection;
+pub use sled::Db;
 pub use std::sync::Arc;
 pub use tokio::sync::Mutex;
 pub use twilight_gateway::shard::Shard;
@@ -19,6 +18,6 @@ pub type Embeddings = EmbeddingsT<FastTextSubwordVocab, NdArray>;
 pub struct Context {
     pub http: Arc<HttpClient>,
     pub shard: Arc<Shard>,
-    pub db: Arc<Mutex<DbConnection>>,
+    pub db: Arc<Db>,
     pub embeddings: Arc<Embeddings>,
 }
