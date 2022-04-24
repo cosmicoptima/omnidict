@@ -3,6 +3,7 @@
 
 use crate::prelude::*;
 use discord::embed_field;
+use finalfusion::similarity::WordSimilarity;
 use rand::{thread_rng, Rng};
 use std::time::Duration;
 use tokio::time::sleep;
@@ -144,6 +145,29 @@ pub async fn handle_command(ctx: &Context, msg: &Message) -> Result<bool> {
 
         discord::reply_embed(http, msg.channel_id, msg.id, &embed).await?;
         return Ok(true);
+    }
+
+    // testing word embeddings
+    if let Some(word) = content.strip_prefix("DEBUG similarity ") {
+        if let Some(results) = ctx.embeddings.word_similarity(word, 10) {
+            discord::reply_embed(
+                http,
+                msg.channel_id,
+                msg.id,
+                &EmbedBuilder::new()
+                    .title("Similar words")
+                    .description(format!(
+                        "{}",
+                        results
+                            .iter()
+                            .map(|result| result.word())
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    ))
+                    .build()?,
+            )
+            .await?;
+        }
     }
 
     Ok(false)

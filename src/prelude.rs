@@ -11,9 +11,14 @@ pub use twilight_gateway::shard::Shard;
 pub use twilight_http::Client as HttpClient;
 pub use twilight_model::channel::message::Message;
 
+use finalfusion::embeddings::Embeddings as EmbeddingsT;
+use finalfusion::{storage::NdArray, vocab::FastTextSubwordVocab};
+pub type Embeddings = EmbeddingsT<FastTextSubwordVocab, NdArray>;
+
 #[derive(Clone)]
 pub struct Context {
     pub http: Arc<HttpClient>,
     pub shard: Arc<Shard>,
     pub db: Arc<Mutex<DbConnection>>,
+    pub embeddings: Arc<Embeddings>,
 }
