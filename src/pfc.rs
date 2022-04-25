@@ -37,15 +37,23 @@ pub async fn catastrophe(http: Arc<HttpClient>) {
 }
 
 pub async fn handle_gateway_event(event: Event, ctx: Context) -> Result<()> {
-    match event {
-        Event::MessageCreate(msg) if msg.author.id != OWN_ID => {
-            let handled = handle_command(&ctx, &msg).await?;
-            if !handled && thread_rng().gen_bool(0.02) {
-                let output = qa_prompt(&msg.content).await?;
-                discord::reply(&ctx.http, msg.channel_id, msg.id, &output).await?;
+    let result: Result<()> = try {
+        match event {
+            Event::MessageCreate(msg) if msg.author.id != OWN_ID => {
+                let handled = handle_command(&ctx, &msg).await?;
+                if !handled && thread_rng().gen_bool(0.02) {
+                    let output = qa_prompt(&msg.content).await?;
+                    discord::reply(&ctx.http, msg.channel_id, msg.id, &output).await?;
+                }
             }
+            _ => (),
         }
-        _ => (),
+    };
+    match result {
+        Ok(_) => (),
+        Err(e) => {
+            discord::post_error(Err(e), &ctx.http).await;
+        }
     }
     Ok(())
 }
